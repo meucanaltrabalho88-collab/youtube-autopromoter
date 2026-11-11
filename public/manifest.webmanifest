@@ -1,0 +1,9 @@
+{
+  "name": "YouTube AutoPromoter",
+  "short_name": "AutoPromoter",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#101010",
+  "theme_color": "#101010",
+  "description": "Painel de acompanhamento do canal no YouTube"
+}
