@@ -1,0 +1,146 @@
+require("dotenv").config();
+
+const express = require("express");
+const session = require("express-session");
+const { google } = require("googleapis");
+const crypto = require("crypto");
+const path = require("path");
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+if (process.env.NODE_ENV === "production") app.set("trust proxy", 1);
+
+app.use(express.json());
+app.use(session({
+  name: "ytap.sid",
+  secret: process.env.SESSION_SECRET || "desenvolvimento-local-apenas",
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    maxAge: 1000 * 60 * 60 * 8
+  }
+}));
+
+app.use(express.static(path.join(__dirname, "public")));
+
+function oauthClient() {
+  const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI } = process.env;
+  if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET || !GOOGLE_REDIRECT_URI) {
+    throw new Error("A configuração OAuth do Google ainda não foi concluída.");
+  }
+  return new google.auth.OAuth2(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI);
+}
+
+app.get("/auth/google", (req, res) => {
+  try {
+    const oauth2 = oauthClient();
+    const state = crypto.randomBytes(24).toString("hex");
+    req.session.oauthState = state;
+    const url = oauth2.generateAuthUrl({
+      access_type: "offline",
+      prompt: "consent",
+      include_granted_scopes: true,
+      state,
+      scope: [
+        "https://www.googleapis.com/auth/youtube.readonly",
+        "https://www.googleapis.com/auth/yt-analytics.readonly"
+      ]
+    });
+    res.redirect(url);
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+});
+
+app.get("/auth/google/callback", async (req, res) => {
+  try {
+    if (!req.query.state || req.query.state !== req.session.oauthState) {
+      return res.status(400).send("Validação de segurança inválida. Volte ao painel e tente novamente.");
+    }
+    delete req.session.oauthState;
+    if (req.query.error) return res.redirect("/?auth=cancelled");
+    const oauth2 = oauthClient();
+    const { tokens } = await oauth2.getToken(String(req.query.code || ""));
+    req.session.tokens = tokens;
+    res.redirect("/?auth=connected");
+  } catch (error) {
+    res.status(500).send("Não foi possível concluir a conexão com o Google. Confira a configuração OAuth.");
+  }
+});
+
+app.post("/auth/logout", (req, res) => {
+  req.session.destroy(() => res.json({ ok: true }));
+});
+
+app.get("/api/status", (req, res) => {
+  res.json({ connected: Boolean(req.session.tokens), configured: Boolean(
+    process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET && process.env.GOOGLE_REDIRECT_URI
+  )});
+});
+
+function googleAuth(req) {
+  if (!req.session.tokens) return null;
+  const auth = oauthClient();
+  auth.setCredentials(req.session.tokens);
+  auth.on("tokens", tokens => {
+    req.session.tokens = { ...req.session.tokens, ...tokens };
+  });
+  return auth;
+}
+
+app.get("/api/channel", async (req, res) => {
+  try {
+    const auth = googleAuth(req);
+    if (!auth) return res.status(401).json({ error: "Conecte seu canal primeiro." });
+    const yt = google.youtube({ version: "v3", auth });
+    const response = await yt.channels.list({ part: ["snippet", "statistics"], mine: true });
+    const channel = response.data.items && response.data.items[0];
+    if (!channel) return res.status(404).json({ error: "Nenhum canal foi encontrado nesta conta Google." });
+    res.json({
+      title: channel.snippet.title,
+      description: channel.snippet.description,
+      thumbnail: channel.snippet.thumbnails?.high?.url || channel.snippet.thumbnails?.default?.url,
+      subscribers: channel.statistics.subscriberCount,
+      views: channel.statistics.viewCount,
+      videos: channel.statistics.videoCount
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Falha ao consultar o canal. Verifique as APIs e permissões do Google." });
+  }
+});
+
+app.get("/api/analytics", async (req, res) => {
+  try {
+    const auth = googleAuth(req);
+    if (!auth) return res.status(401).json({ error: "Conecte seu canal primeiro." });
+    const analytics = google.youtubeAnalytics({ version: "v2", auth });
+    const end = new Date();
+    end.setDate(end.getDate() - 2);
+    const start = new Date(end);
+    start.setDate(start.getDate() - 27);
+    const fmt = d => d.toISOString().slice(0, 10);
+    const response = await analytics.reports.query({
+      ids: "channel==MINE",
+      startDate: fmt(start),
+      endDate: fmt(end),
+      metrics: "views,estimatedMinutesWatched,averageViewDuration,subscribersGained",
+      dimensions: "day",
+      sort: "day"
+    });
+    res.json({
+      startDate: fmt(start),
+      endDate: fmt(end),
+      rows: response.data.rows || []
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Não foi possível carregar as métricas do YouTube Analytics." });
+  }
+});
+
+app.get("*", (req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
+
+app.listen(PORT, () => console.log(`YouTube AutoPromoter disponível na porta ${PORT}`));
