@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111111">
+  <meta name="description" content="Painel de acompanhamento do seu canal no YouTube.">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="stylesheet" href="/style.css">
+  <title>YouTube AutoPromoter</title>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/"><span class="brand-mark">▶</span><span>YouTube <b>AutoPromoter</b></span></a>
+    <span class="status" id="connection-status">Verificando conexão…</span>
+  </header>
+  <main class="container">
+    <section class="welcome">
+      <p class="eyebrow">SEU CANAL, EM UM SÓ LUGAR</p>
+      <h1>Transforme dados em <span>decisões.</span></h1>
+      <p class="muted">Acompanhe o desempenho do seu canal com dados oficiais do YouTube.</p>
+      <button class="primary" id="connect-button">Conectar canal do YouTube</button>
+      <p class="hint" id="setup-hint">A conexão será feita pela autorização oficial do Google.</p>
+    </section>
+
+    <section id="dashboard" class="hidden">
+      <div class="channel-card">
+        <img id="channel-thumbnail" alt="" src="">
+        <div><p class="eyebrow">CANAL CONECTADO</p><h2 id="channel-title">Seu canal</h2><p class="muted" id="channel-description"></p></div>
+        <button class="secondary" id="refresh-button">Atualizar</button>
+      </div>
+      <div class="metrics">
+        <article class="metric"><span>Inscritos</span><strong id="subscribers">—</strong></article>
+        <article class="metric"><span>Visualizações totais</span><strong id="views">—</strong></article>
+        <article class="metric"><span>Vídeos publicados</span><strong id="videos">—</strong></article>
+      </div>
+      <section class="panel">
+        <div class="panel-heading"><div><p class="eyebrow">DESEMPENHO</p><h2>Últimos 28 dias</h2></div><span class="muted" id="analytics-period"></span></div>
+        <div class="metrics analytics">
+          <article class="metric"><span>Visualizações</span><strong id="period-views">—</strong></article>
+          <article class="metric"><span>Minutos assistidos</span><strong id="watch-time">—</strong></article>
+          <article class="metric"><span>Novos inscritos</span><strong id="gained-subs">—</strong></article>
+        </div>
+        <p class="hint">Os relatórios podem ter alguns dias de atraso, conforme o YouTube Analytics.</p>
+      </section>
+      <button class="text-button" id="disconnect-button">Desconectar sessão</button>
+    </section>
+    <p class="notice" id="message" role="status"></p>
+  </main>
+  <footer>Ferramenta independente de análise. Não compra visualizações, inscritos ou interações.</footer>
+  <script src="/app.js"></script>
+</body>
+</html>
