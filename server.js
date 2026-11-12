@@ -2,6 +2,7 @@ require("dotenv").config();
 
 const express = require("express");
 const session = require("express-session");
+const PgSession = require("connect-pg-simple")(session);
 const { google } = require("googleapis");
 const crypto = require("crypto");
 const path = require("path");
@@ -12,16 +13,33 @@ const PORT = process.env.PORT || 3000;
 if (process.env.NODE_ENV === "production") app.set("trust proxy", 1);
 
 app.use(express.json());
+const sessionStore = process.env.DATABASE_URL
+  ? new PgSession({
+      conString: process.env.DATABASE_URL,
+      tableName: "user_sessions",
+      createTableIfMissing: true,
+      ssl: process.env.DATABASE_SSL === "false" ? false : { rejectUnauthorized: false }
+    })
+  : undefined;
+
+if (!process.env.DATABASE_URL) {
+  console.warn("[Sessão] DATABASE_URL não configurada. As sessões ficarão apenas na memória e poderão ser perdidas em reinicializações.");
+}
+if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET === "desenvolvimento-local-apenas") {
+  console.warn("[Segurança] Configure SESSION_SECRET com uma chave aleatória forte no Render.");
+}
+
 app.use(session({
   name: "ytap.sid",
   secret: process.env.SESSION_SECRET || "desenvolvimento-local-apenas",
+  store: sessionStore,
   resave: false,
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
-    maxAge: 1000 * 60 * 60 * 8
+    maxAge: 1000 * 60 * 60 * 24 * 30
   }
 }));
 
