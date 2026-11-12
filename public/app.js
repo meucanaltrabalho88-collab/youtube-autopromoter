@@ -151,7 +151,7 @@ function renderSEO(){
   const profile=getEditorialProfile();
   const topic=$("seo-topic").value.trim();
   const keyword=$("seo-keyword").value.trim();
-  const script=$("seo-script").value.trim();
+  const script=$("seo-script").value.trim().replace(/^(?:escrita|roteiro|narração)\s*[:\-]?\s*/i,"");
   const output=$("seo-results");
   output.replaceChildren();
   if(!script || script.length < 250){
@@ -159,7 +159,7 @@ function renderSEO(){
     return;
   }
 
-  const stopWords=new Set(("a o as os um uma uns umas de da do das dos em no na nos nas por para com sem sob sobre entre e ou mas que se sua seu suas seus isso isto esse essa este esta ao aos à às como mais menos muito muita muitos muitas já também não sim ser estar ter foi são era eram será vai vão pode podem deve devem porque quando onde qual quais quem todo toda todos todas cada outro outra outros outras mesmo mesma mesmos mesmas pelo pela pelos pelas até após antes durante então assim apenas ainda aqui ali ele ela eles elas nós vocês eu me meu minha meus minhas você canal vídeo vídeos conteúdo conteúdos tema assunto debate reflexão opinião análise").split(/\s+/));
+  const stopWords=new Set(("a o as os um uma uns umas de da do das dos em no na nos nas por para com sem sob sobre entre e ou mas que se sua seu suas seus isso isto esse essa este esta ao aos à às como mais menos muito muita muitos muitas já também não sim ser estar ter foi são era eram será vai vão pode podem deve devem porque quando onde qual quais quem todo toda todos todas cada outro outra outros outras mesmo mesma mesmos mesmas pelo pela pelos pelas até após antes durante então assim apenas ainda aqui ali ele ela eles elas nós vocês eu me meu minha meus minhas você voces canal vídeo vídeos conteúdo conteúdos tema assunto debate reflexão opinião análise acontece ambiente concentracao escrita roteiro narração".split(/\s+/));
 
   const clean=s=>s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9\s]/g," ").replace(/\s+/g," ").trim();
   const words=clean(script).split(" ").filter(w=>w.length>3&&!stopWords.has(w));
@@ -211,13 +211,16 @@ function renderSEO(){
   const body=sentences.slice(0,6).join(" ");
   const cleanPhrase=value=>String(value||"").trim().replace(/[.!?]+$/g,"");
   const description=(niche?"Aqui no canal, a gente fala sobre "+cleanPhrase(niche).toLowerCase()+". ":"")+
-    (style?"Tudo com um jeito "+cleanPhrase(style).toLowerCase()+". ":"")+
+    (style?"Por aqui, a resenha é descontraída e bem-humorada. ":"")+
     (topic?"Neste vídeo, o papo é sobre "+cleanPhrase(topic)+". ":"")+
     (body?body+" ":"")+
     "\n\nE você, o que acha? Deixe sua opinião nos comentários e participe da conversa. "+
     "Inscreva-se no canal para acompanhar as próximas resenhas e histórias.";
-  const tags=[...new Set([key,...related,...(topic?clean(topic).split(" ").filter(w=>w.length>3&&!stopWords.has(w)):[]),...profileThemes,...(niche?[niche]:[]),"debate","opinião"].map(v=>v.trim()).filter(Boolean))].slice(0,20);
-  const hashtags=[...new Set([key,...related.slice(0,2),...profileThemes.slice(0,1),niche].map(v=>clean(v).replace(/\s+/g,"")).filter(v=>v.length>=3))].slice(0,5).map(v=>"#"+v).join(" ");
+  const topicTerms=clean(topic).split(" ").filter(w=>w.length>3&&!stopWords.has(w));
+  const candidates=["bastidores do futebol","histórias engraçadas","brincadeiras entre jogadores","pegadinhas no futebol","vestiário de futebol","superstições no futebol","resenha no futebol","jogadores de futebol","futebol","resenha esportiva"];
+  const scriptTerms=candidates.filter(phrase=>clean(script).includes(clean(phrase)));
+  const tags=[...new Set([keyword, ...scriptTerms, ...topicTerms.filter(w=>clean(script).includes(w)), ...ranked.filter(w=>w.length>5).slice(0,4)].map(v=>String(v||"").trim()).filter(v=>v.length>2))].slice(0,15);
+  const hashtags=[...new Set([keyword, ...scriptTerms.slice(0,3), "futebol"].map(v=>clean(v).replace(/\s+/g,"")).filter(v=>v.length>=3))].slice(0,5).map(v=>"#"+v).join(" ");
   const addResult=(label,value)=>{
     const section=document.createElement("div"); section.className="seo-result";
     const heading=document.createElement("b"); heading.textContent=label;
