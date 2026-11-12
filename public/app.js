@@ -116,6 +116,38 @@ function renderDiagnosis(rows, totals, videos){
   addInsight("neutral", "Próxima verificação importante", "CTR de impressões e retenção detalhada não estão disponíveis nesta análise automática. Consulte essas métricas no YouTube Studio antes de decidir trocar miniaturas ou editar a estrutura dos vídeos.");
 }
 
+
+function renderSEO(){
+  const topic=$("seo-topic").value.trim();
+  const keyword=$("seo-keyword").value.trim();
+  const output=$("seo-results");
+  if(!topic){ output.textContent="Informe o assunto do vídeo para gerar as sugestões."; return; }
+  const key=keyword||topic;
+  const titles=[
+    "Afinal, "+key+"? Entenda o que está por trás desse debate",
+    key+": o que quase ninguém considera nessa discussão",
+    "A verdade sobre "+key+" — argumentos dos dois lados"
+  ];
+  const hashtag=key.replace(/[^\p{L}\p{N}]+/gu,"");
+  const description="Neste vídeo, vamos discutir "+topic+" e analisar diferentes perspectivas sobre esse tema.\n\nQuais são os principais argumentos? O que os fatos e experiências mostram? E como essa questão afeta nossa maneira de pensar?\n\nAssista até o final, compartilhe sua opinião nos comentários e participe do debate. Inscreva-se no canal para acompanhar novos conteúdos que despertam curiosidade e reflexão.\n\n#"+hashtag+" #Debate #Reflexão";
+  const tags=[...new Set([key,topic,"debate","reflexão","opinião","análise","curiosidades","comportamento humano"].map(v=>v.trim()).filter(Boolean))].slice(0,15).join(", ");
+  output.replaceChildren();
+  const addResult=(label,value)=>{
+    const section=document.createElement("div"); section.className="seo-result";
+    const heading=document.createElement("b"); heading.textContent=label;
+    const content=document.createElement("p"); content.className="seo-copy-text"; content.textContent=value;
+    const button=document.createElement("button"); button.className="secondary"; button.type="button"; button.textContent="Copiar";
+    button.addEventListener("click",async()=>{try{await navigator.clipboard.writeText(value);button.textContent="Copiado!";}catch(e){button.textContent="Copie manualmente";}});
+    section.append(heading,content,button); output.appendChild(section);
+  };
+  addResult("3 opções de título",titles.map((v,i)=>(i+1)+". "+v).join("\n"));
+  addResult("Descrição sugerida",description);
+  addResult("Palavras-chave / tags",tags);
+  const note=document.createElement("p"); note.className="hint";
+  note.textContent="Sugestões automáticas para edição manual. Escolha um título fiel ao conteúdo, evite promessas exageradas e confira o desempenho no YouTube Studio. Tags ajudam a contextualizar, mas título, miniatura e satisfação do público são mais importantes.";
+  output.appendChild(note);
+}
+
 const $ = id => document.getElementById(id);
 const number = value => new Intl.NumberFormat("pt-BR").format(Number(value || 0));
 function message(text=""){ $("message").textContent=text; }
@@ -202,6 +234,7 @@ async function loadDashboard(){
 }
 $("connect-button").addEventListener("click",()=>location.href="/auth/google");
 $("refresh-button").addEventListener("click",loadDashboard);
+$("seo-generate").addEventListener("click",renderSEO);
 $("disconnect-button").addEventListener("click",async()=>{
   await api("/auth/logout",{method:"POST"});
   location.reload();
