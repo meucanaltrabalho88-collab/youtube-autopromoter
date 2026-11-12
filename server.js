@@ -131,6 +131,34 @@ function googleAuth(req) {
   return auth;
 }
 
+app.get("/api/channels", async (req, res) => {
+  try {
+    const auth = googleAuth(req);
+    if (!auth) return res.status(401).json({ error: "Conecte sua conta Google primeiro." });
+    const yt = google.youtube({ version: "v3", auth });
+    const response = await yt.channels.list({
+      part: ["id", "snippet", "statistics"],
+      mine: true,
+      maxResults: 50
+    });
+    const channels = (response.data.items || []).map(channel => ({
+      id: channel.id,
+      title: channel.snippet?.title || "Canal sem título",
+      thumbnail: channel.snippet?.thumbnails?.default?.url || "",
+      subscribers: channel.statistics?.subscriberCount || "0",
+      views: channel.statistics?.viewCount || "0",
+      videos: channel.statistics?.videoCount || "0"
+    }));
+    res.json({ channels, total: channels.length });
+  } catch (error) {
+    console.error("[YouTube Data API] Falha ao listar canais:", {
+      status: error.response?.status || error.status || null,
+      message: error.message || "Erro sem mensagem"
+    });
+    res.status(500).json({ error: "Não foi possível listar os canais autorizados nesta conta Google." });
+  }
+});
+
 app.get("/api/channel", async (req, res) => {
   try {
     const auth = googleAuth(req);
