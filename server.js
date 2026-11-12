@@ -198,7 +198,7 @@ app.get("/api/top-videos", async (req, res) => {
       startDate: fmt(start),
       endDate: fmt(end),
       dimensions: "video",
-      metrics: "views,estimatedMinutesWatched,averageViewDuration,impressions,impressionsClickThroughRate",
+      metrics: "views,estimatedMinutesWatched,averageViewDuration,impressions,impressionClickThroughRate",
       sort: "-estimatedMinutesWatched",
       maxResults: 10
     });
