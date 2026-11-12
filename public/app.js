@@ -120,18 +120,47 @@ function renderDiagnosis(rows, totals, videos){
 function renderSEO(){
   const topic=$("seo-topic").value.trim();
   const keyword=$("seo-keyword").value.trim();
+  const script=$("seo-script").value.trim();
   const output=$("seo-results");
-  if(!topic){ output.textContent="Informe o assunto do vídeo para gerar as sugestões."; return; }
-  const key=keyword||topic;
-  const titles=[
-    "Afinal, "+key+"? Entenda o que está por trás desse debate",
-    key+": o que quase ninguém considera nessa discussão",
-    "A verdade sobre "+key+" — argumentos dos dois lados"
-  ];
-  const hashtag=key.replace(/[^\p{L}\p{N}]+/gu,"");
-  const description="Neste vídeo, vamos discutir "+topic+" e analisar diferentes perspectivas sobre esse tema.\n\nQuais são os principais argumentos? O que os fatos e experiências mostram? E como essa questão afeta nossa maneira de pensar?\n\nAssista até o final, compartilhe sua opinião nos comentários e participe do debate. Inscreva-se no canal para acompanhar novos conteúdos que despertam curiosidade e reflexão.\n\n#"+hashtag+" #Debate #Reflexão";
-  const tags=[...new Set([key,topic,"debate","reflexão","opinião","análise","curiosidades","comportamento humano"].map(v=>v.trim()).filter(Boolean))].slice(0,15).join(", ");
   output.replaceChildren();
+  if(!script || script.length < 250){
+    output.textContent="Cole o roteiro completo (mínimo de 250 caracteres) para que a análise tenha contexto suficiente.";
+    return;
+  }
+
+  const stopWords=new Set(("a o as os um uma uns umas de da do das dos em no na nos nas por para com sem sob sobre entre e ou mas que se sua seu suas seus isso isto esse essa este esta ao aos à às como mais menos muito muita muitos muitas já também não sim ser estar ter foi são era eram será vai vão pode podem deve devem porque quando onde qual quais quem todo toda todos todas cada outro outra outros outras mesmo mesma mesmos mesmas pelo pela pelos pelas até após antes durante então assim apenas ainda aqui ali ele ela eles elas nós vocês eu me meu minha meus minhas você canal vídeo vídeos conteúdo conteúdos tema assunto debate reflexão opinião análise").split(/\s+/));
+
+  const clean=s=>s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9\s]/g," ").replace(/\s+/g," ").trim();
+  const words=clean(script).split(" ").filter(w=>w.length>3&&!stopWords.has(w));
+  const counts=new Map();
+  words.forEach(w=>counts.set(w,(counts.get(w)||0)+1));
+  const ranked=[...counts.entries()].sort((a,b)=>b[1]-a[1]).map(x=>x[0]);
+  const uniquePhrases=[];
+  const sentences=script.replace(/\s+/g," ").split(/(?<=[.!?])\s+/).map(s=>s.trim()).filter(s=>s.length>35);
+  const firstSentences=sentences.slice(0,3);
+  const questionSentences=sentences.filter(s=>s.includes("?"));
+  const key=keyword||ranked[0]||topic;
+  const related=ranked.filter(w=>clean(w)!==clean(key)).slice(0,8);
+  const titleTopic=topic||key;
+  const titleOptions=[
+    titleTopic+"? O que os argumentos deste vídeo revelam",
+    "O que quase sempre fica de fora quando falamos sobre "+key,
+    key+": os argumentos, dúvidas e contradições que merecem atenção"
+  ];
+  if(questionSentences.length){
+    const q=questionSentences[0].replace(/[“”"]/g,"").trim();
+    titleOptions[0]=q.length<=78?q:titleOptions[0];
+  }
+  const intro=firstSentences.join(" ");
+  const summary=sentences.length>3?sentences.slice(3,6).join(" "):"Neste vídeo, examinamos diferentes pontos de vista, os argumentos apresentados e as consequências desse tema.";
+  const description=(topic?"Neste vídeo, o tema central é "+topic+". ":"")+
+    (intro?intro+" ":"")+
+    (summary?summary+" ":"")+
+    "\n\nA proposta é olhar para o assunto com senso crítico, considerar os diferentes lados e separar opiniões de argumentos. "+
+    (questionSentences.length?"Uma das perguntas que orientam a discussão é: "+questionSentences[0]:"Qual argumento faz mais sentido para você?")+
+    "\n\nDeixe sua opinião nos comentários e participe do debate. Se este tipo de conteúdo interessa a você, inscreva-se no canal para acompanhar os próximos vídeos.";
+  const tags=[...new Set([key,...related,...(topic?clean(topic).split(" ").filter(w=>w.length>3&&!stopWords.has(w)):[]),"debate","reflexão","opinião"].map(v=>v.trim()).filter(Boolean))].slice(0,15);
+  const hashtags=[...new Set([key,...related.slice(0,2),"debate"].map(v=>v.replace(/[^a-z0-9]/gi,"")).filter(Boolean))].slice(0,4).map(v=>"#"+v).join(" ");
   const addResult=(label,value)=>{
     const section=document.createElement("div"); section.className="seo-result";
     const heading=document.createElement("b"); heading.textContent=label;
@@ -140,11 +169,11 @@ function renderSEO(){
     button.addEventListener("click",async()=>{try{await navigator.clipboard.writeText(value);button.textContent="Copiado!";}catch(e){button.textContent="Copie manualmente";}});
     section.append(heading,content,button); output.appendChild(section);
   };
-  addResult("3 opções de título",titles.map((v,i)=>(i+1)+". "+v).join("\n"));
-  addResult("Descrição sugerida",description);
-  addResult("Palavras-chave / tags",tags);
+  addResult("3 títulos baseados no roteiro",titleOptions.map((v,i)=>(i+1)+". "+v).join("\n\n"));
+  addResult("Descrição contextualizada",description+"\n\n"+hashtags);
+  addResult("Palavras-chave extraídas do roteiro",tags.join(", "));
   const note=document.createElement("p"); note.className="hint";
-  note.textContent="Sugestões automáticas para edição manual. Escolha um título fiel ao conteúdo, evite promessas exageradas e confira o desempenho no YouTube Studio. Tags ajudam a contextualizar, mas título, miniatura e satisfação do público são mais importantes.";
+  note.textContent="A análise identifica termos e frases presentes no roteiro. Revise os títulos para garantir que representem fielmente o vídeo. As tags são apoio contextual; título, miniatura, retenção e satisfação do público têm maior peso.";
   output.appendChild(note);
 }
 
