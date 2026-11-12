@@ -73,6 +73,24 @@
         <div id="diagnosis-content" class="diagnosis-list"><p class="muted">Preparando diagnóstico…</p></div>
       </section>
 
+      <section class="panel profile-panel">
+        <div class="panel-heading"><div><p class="eyebrow">PERSONALIZAÇÃO POR CANAL</p><h2>Identidade editorial do canal</h2></div><span class="muted">Perfil independente</span></div>
+        <p class="hint">Defina o nicho e a linguagem deste canal. O perfil fica salvo neste navegador e será aplicado às sugestões de SEO sempre que você analisar um roteiro.</p>
+        <div class="seo-form">
+          <label for="profile-niche">Nicho principal</label>
+          <input id="profile-niche" maxlength="120" placeholder="Ex.: futebol, bastidores e entretenimento">
+          <label for="profile-audience">Público que deseja alcançar</label>
+          <input id="profile-audience" maxlength="180" placeholder="Ex.: torcedores que gostam de resenhas e histórias">
+          <label for="profile-style">Estilo e linguagem</label>
+          <input id="profile-style" maxlength="180" placeholder="Ex.: descontraído, bem-humorado e espontâneo">
+          <label for="profile-themes">Temas que devem aparecer (separados por vírgula)</label>
+          <input id="profile-themes" maxlength="300" placeholder="Ex.: jogadores, bastidores, histórias engraçadas, curiosidades">
+          <label for="profile-avoid">Temas ou abordagens a evitar (opcional)</label>
+          <input id="profile-avoid" maxlength="300" placeholder="Ex.: análises táticas profundas, notícias sem confirmação">
+          <button class="primary" id="profile-save" type="button">Salvar identidade deste canal</button>
+          <p class="hint" id="profile-status" aria-live="polite">O perfil será associado ao canal conectado.</p>
+        </div>
+      </section>
       <section class="panel seo-panel">
         <div class="panel-heading"><div><p class="eyebrow">OTIMIZAÇÃO DE CONTEÚDO</p><h2>SEO Inteligente</h2></div><span class="muted">Títulos, descrição e palavras-chave</span></div>
         <p class="hint">Cole o roteiro para identificar os argumentos, perguntas e termos mais relevantes. O gerador usará o conteúdo real do vídeo para montar os rascunhos.</p>
