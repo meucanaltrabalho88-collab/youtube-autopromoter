@@ -13,6 +13,11 @@ const PORT = process.env.PORT || 3000;
 if (process.env.NODE_ENV === "production") app.set("trust proxy", 1);
 
 app.use(express.json());
+
+// Endpoint simples para o health check do Render. Não depende de Google ou PostgreSQL.
+app.get("/healthz", (req, res) => {
+  res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+});
 const sessionStore = process.env.DATABASE_URL
   ? new PgSession({
       conString: process.env.DATABASE_URL,
@@ -278,4 +283,4 @@ app.get("/api/top-videos", async (req, res) => {
 
 app.get("*", (req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
 
-app.listen(PORT, () => console.log(`YouTube AutoPromoter disponível na porta ${PORT}`));
+app.listen(PORT, "0.0.0.0", () => console.log(`YouTube AutoPromoter disponível na porta ${PORT}`));
