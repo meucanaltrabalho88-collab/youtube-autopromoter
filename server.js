@@ -39,7 +39,9 @@ app.get("/auth/google", (req, res) => {
   try {
     const oauth2 = oauthClient();
     const state = crypto.randomBytes(24).toString("hex");
-    req.session.oauthState = state;
+    req.session.oauthStates = req.session.oauthStates || {};
+    req.session.oauthStates[state] = Date.now();
+    // Persist the session before redirecting to Google so the state cookie is available on callback.
     const url = oauth2.generateAuthUrl({
       access_type: "offline",
       prompt: "consent",
@@ -50,7 +52,13 @@ app.get("/auth/google", (req, res) => {
         "https://www.googleapis.com/auth/yt-analytics.readonly"
       ]
     });
-    res.redirect(url);
+    req.session.save(saveError => {
+      if (saveError) {
+        console.error("[OAuth] Não foi possível salvar a sessão antes do redirecionamento:", saveError.message);
+        return res.status(500).send("Não foi possível iniciar a conexão com o Google. Atualize o painel e tente novamente.");
+      }
+      res.redirect(url);
+    });
   } catch (error) {
     res.status(500).send(error.message);
   }
@@ -58,16 +66,29 @@ app.get("/auth/google", (req, res) => {
 
 app.get("/auth/google/callback", async (req, res) => {
   try {
-    if (!req.query.state || req.query.state !== req.session.oauthState) {
-      return res.status(400).send("Validação de segurança inválida. Volte ao painel e tente novamente.");
+    const state = String(req.query.state || "");
+    const createdAt = req.session.oauthStates && req.session.oauthStates[state];
+    const stateIsValid = Boolean(createdAt && Date.now() - createdAt <= 10 * 60 * 1000);
+    if (!stateIsValid) {
+      return res.status(400).send("Validação de segurança inválida. Volte ao painel, atualize a página e tente novamente.");
     }
-    delete req.session.oauthState;
-    if (req.query.error) return res.redirect("/?auth=cancelled");
+    // Consume only the matching state; other simultaneous login attempts remain valid.
+    delete req.session.oauthStates[state];
+    if (req.query.error) {
+      return req.session.save(() => res.redirect("/?auth=cancelled"));
+    }
     const oauth2 = oauthClient();
     const { tokens } = await oauth2.getToken(String(req.query.code || ""));
     req.session.tokens = tokens;
-    res.redirect("/?auth=connected");
+    req.session.save(saveError => {
+      if (saveError) {
+        console.error("[OAuth] Não foi possível salvar a sessão após a autorização:", saveError.message);
+        return res.status(500).send("A autorização foi concluída, mas não foi possível salvar a sessão. Volte ao painel e conecte novamente.");
+      }
+      res.redirect("/?auth=connected");
+    });
   } catch (error) {
+    console.error("[OAuth] Falha no retorno do Google:", error.message);
     res.status(500).send("Não foi possível concluir a conexão com o Google. Confira a configuração OAuth.");
   }
 });
