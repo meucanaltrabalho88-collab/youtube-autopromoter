@@ -183,21 +183,21 @@ function renderSEO(){
   let titleOptions;
   if(isFootball && /vesti.rio|c.meras desligadas|c.meras est.o desligadas|pegadinha|brincadeira|apelido|supersti..o/.test(lowerScript)){
     titleOptions=[
-      "O que rola nos bastidores do futebol quando ninguém está vendo?",
-      "As brincadeiras e pegadinhas que fazem parte da vida dos jogadores",
-      "No vestiário, nem tudo é concentração: também tem muita resenha"
+      "No futebol, a resenha também acontece longe das câmeras",
+      "Tem jogador que não dispensa uma brincadeira nem antes do jogo",
+      "O que acontece no vestiário antes de a bola rolar?"
     ];
   } else if(isFootball) {
     titleOptions=[
+      "O que aconteceu nessa história de futebol?",
       "A resenha por trás de "+titleTopic,
-      "O que os jogadores têm a dizer sobre "+titleTopic,
-      titleTopic+": histórias e bastidores do futebol"
+      "Essa história dos bastidores do futebol merece ser contada"
     ];
   } else {
     titleOptions=[
       "O que está por trás de "+titleTopic+"?",
-      "O que pouca gente percebe sobre "+titleTopic,
-      titleTopic+": o que vale a pena entender"
+      "Tem um detalhe sobre "+titleTopic+" que merece atenção",
+      "Afinal, como "+titleTopic+" aparece na vida real?"
     ];
   }
   if(questionSentences.length && questionSentences[0].length<=78){
@@ -207,9 +207,10 @@ function renderSEO(){
   titleOptions=[...new Set(titleOptions)].slice(0,3);
   while(titleOptions.length<3) titleOptions.push("Uma conversa sobre "+titleTopic);
   const body=sentences.slice(0,6).join(" ");
-  const description=(niche?"Aqui no canal, a gente fala sobre "+niche.toLowerCase()+". ":"")+
-    (style?"Tudo com um jeito "+style.toLowerCase()+". ":"")+
-    (topic?"Neste vídeo, o papo é sobre "+topic+". ":"")+
+  const cleanPhrase=value=>String(value||"").trim().replace(/[.!?]+$/g,"");
+  const description=(niche?"Aqui no canal, a gente fala sobre "+cleanPhrase(niche).toLowerCase()+". ":"")+
+    (style?"Tudo com um jeito "+cleanPhrase(style).toLowerCase()+". ":"")+
+    (topic?"Neste vídeo, o papo é sobre "+cleanPhrase(topic)+". ":"")+
     (body?body+" ":"")+
     "\n\nE você, o que acha? Deixe sua opinião nos comentários e participe da conversa. "+
     "Inscreva-se no canal para acompanhar as próximas resenhas e histórias.";
