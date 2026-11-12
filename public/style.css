@@ -16,3 +16,11 @@ button{font:inherit;cursor:pointer;border:0;border-radius:12px;padding:13px 18px
 @media(max-width:600px){.goal-title{align-items:flex-start;flex-direction:column}.goal-title>strong{text-align:left}}
 
 .video-list{display:grid;gap:12px;margin-top:18px}.video-item{display:flex;align-items:center;gap:14px;padding:12px;background:#222;border:1px solid var(--line);border-radius:12px;min-width:0}.video-item img{width:128px;aspect-ratio:16/9;object-fit:cover;border-radius:8px;background:#333}.video-content{min-width:0}.video-content b{display:block;font-size:14px;line-height:1.4;overflow-wrap:anywhere}.video-content p{margin:7px 0 0;font-size:12px;line-height:1.6}@media(max-width:600px){.video-item{align-items:flex-start}.video-item img{width:104px}.video-content p{font-size:11px}}
+
+.diagnosis-list{display:grid;gap:11px;margin-top:18px}
+.diagnosis-item{padding:15px 16px;border:1px solid var(--line);border-left:4px solid #777;border-radius:12px;background:#222}
+.diagnosis-item b{display:block;font-size:14px;margin-bottom:6px}
+.diagnosis-item p{margin:0;color:var(--muted);font-size:13px;line-height:1.6}
+.diagnosis-item.positive{border-left-color:#36b879}
+.diagnosis-item.attention{border-left-color:#e6a23c}
+.diagnosis-item.neutral{border-left-color:#777}
