@@ -71,7 +71,7 @@ async function loadDashboard(){
         stats.className="muted";
         const avg=Math.floor(video.averageViewDuration||0);
         const avgText=Math.floor(avg/60)+":"+String(avg%60).padStart(2,"0");
-        stats.textContent=number(video.views)+" visualizações  •  "+number(video.watchHours)+" horas assistidas  •  média "+avgText+"  •  CTR "+(Number(video.clickThroughRate||0)*100).toFixed(1).replace(".",",")+"%";
+        stats.textContent=number(video.views)+" visualizações  •  "+number(video.watchHours)+" horas assistidas  •  média "+avgText+"  •  CTR: consulte no YouTube Studio";
         content.append(title,stats);
         card.append(img,content);
         list.appendChild(card);
