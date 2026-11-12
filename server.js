@@ -198,7 +198,7 @@ app.get("/api/top-videos", async (req, res) => {
       startDate: fmt(start),
       endDate: fmt(end),
       dimensions: "video",
-      metrics: "views,estimatedMinutesWatched,averageViewDuration,impressions,impressionClickThroughRate",
+      metrics: "views,estimatedMinutesWatched,averageViewDuration",
       sort: "-estimatedMinutesWatched",
       maxResults: 10
     });
@@ -220,13 +220,11 @@ app.get("/api/top-videos", async (req, res) => {
         views: Number(row[1] || 0),
         watchHours: Math.round(Number(row[2] || 0) / 60),
         averageViewDuration: Number(row[3] || 0),
-        impressions: Number(row[4] || 0),
-        clickThroughRate: Number(row[5] || 0)
       };
     }).filter(Boolean);
     res.json({ startDate: fmt(start), endDate: fmt(end), videos });
   } catch (error) {
-    console.error("[YouTube Analytics] Falha ao consultar vídeos:", error.message);
+    console.error("[YouTube Analytics] Falha ao consultar vídeos:", { message: error.message, status: error.response?.status, details: error.response?.data?.error?.message });
     res.status(500).json({ error: "Não foi possível analisar os vídeos. Confira se o canal possui dados no período." });
   }
 });
