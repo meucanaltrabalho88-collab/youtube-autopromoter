@@ -168,6 +168,7 @@ app.get("/api/channel", async (req, res) => {
     const channel = response.data.items && response.data.items[0];
     if (!channel) return res.status(404).json({ error: "Nenhum canal foi encontrado nesta conta Google." });
     res.json({
+      id: channel.id,
       title: channel.snippet.title,
       description: channel.snippet.description,
       thumbnail: channel.snippet.thumbnails?.high?.url || channel.snippet.thumbnails?.default?.url,
