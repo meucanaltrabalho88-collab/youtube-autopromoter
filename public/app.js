@@ -117,7 +117,38 @@ function renderDiagnosis(rows, totals, videos){
 }
 
 
+let activeChannelId = "";
+function profileStorageKey(){ return "ytap-editorial-profile:" + (activeChannelId || "default"); }
+function getEditorialProfile(){
+  try { return JSON.parse(localStorage.getItem(profileStorageKey()) || "{}"); }
+  catch(e){ return {}; }
+}
+function loadEditorialProfile(){
+  const p=getEditorialProfile();
+  $("profile-niche").value=p.niche||"";
+  $("profile-audience").value=p.audience||"";
+  $("profile-style").value=p.style||"";
+  $("profile-themes").value=p.themes||"";
+  $("profile-avoid").value=p.avoid||"";
+  $("profile-status").textContent="Perfil associado ao canal conectado.";
+}
+function saveEditorialProfile(){
+  const p={
+    niche:$("profile-niche").value.trim(),
+    audience:$("profile-audience").value.trim(),
+    style:$("profile-style").value.trim(),
+    themes:$("profile-themes").value.trim(),
+    avoid:$("profile-avoid").value.trim()
+  };
+  if(!p.niche && !p.audience && !p.style && !p.themes && !p.avoid){
+    $("profile-status").textContent="Preencha pelo menos o nicho ou o estilo do canal.";
+    return;
+  }
+  localStorage.setItem(profileStorageKey(),JSON.stringify(p));
+  $("profile-status").textContent="Identidade editorial salva para este canal.";
+}
 function renderSEO(){
+  const profile=getEditorialProfile();
   const topic=$("seo-topic").value.trim();
   const keyword=$("seo-keyword").value.trim();
   const script=$("seo-script").value.trim();
@@ -140,27 +171,40 @@ function renderSEO(){
   const firstSentences=sentences.slice(0,3);
   const questionSentences=sentences.filter(s=>s.includes("?"));
   const key=keyword||ranked[0]||topic;
+  const niche=profile.niche||"";
+  const audience=profile.audience||"";
+  const style=profile.style||"";
+  const profileThemes=(profile.themes||"").split(",").map(v=>v.trim()).filter(Boolean);
+  const avoid=(profile.avoid||"").trim();
   const related=ranked.filter(w=>clean(w)!==clean(key)).slice(0,8);
   const titleTopic=topic||key;
   const titleOptions=[
-    titleTopic+"? O que os argumentos deste vídeo revelam",
-    "O que quase sempre fica de fora quando falamos sobre "+key,
-    key+": os argumentos, dúvidas e contradições que merecem atenção"
+    titleTopic+"? A história por trás do assunto",
+    "O que pouca gente sabe sobre "+(titleTopic||key),
+    (key||titleTopic)+": uma resenha com histórias e detalhes que merecem atenção"
   ];
+  if(niche.toLowerCase().includes("futebol") || profileThemes.some(t=>/jogador|bastidor|resenha|futebol|hist.ria engra/i.test(t))){
+    titleOptions[0]=(topic||key)+"? A história que está por trás dessa resenha";
+    titleOptions[1]="O bastidor e os detalhes que pouca gente conhece sobre "+(topic||key);
+    titleOptions[2]="A resenha é boa, mas essa história é melhor: "+(topic||key);
+  }
   if(questionSentences.length){
     const q=questionSentences[0].replace(/[“”"]/g,"").trim();
     titleOptions[0]=q.length<=78?q:titleOptions[0];
   }
   const intro=firstSentences.join(" ");
   const summary=sentences.length>3?sentences.slice(3,6).join(" "):"Neste vídeo, examinamos diferentes pontos de vista, os argumentos apresentados e as consequências desse tema.";
-  const description=(topic?"Neste vídeo, o tema central é "+topic+". ":"")+
+  const description=(niche?"Conteúdo do canal sobre "+niche+". ":"")+
+    (style?"Em uma linguagem "+style+", ":"")+
+    (audience?"Pensado para "+audience+". ":"")+
+    (topic?"Neste vídeo, o tema central é "+topic+". ":"")+
     (intro?intro+" ":"")+
     (summary?summary+" ":"")+
     "\n\nA proposta é olhar para o assunto com senso crítico, considerar os diferentes lados e separar opiniões de argumentos. "+
     (questionSentences.length?"Uma das perguntas que orientam a discussão é: "+questionSentences[0]:"Qual argumento faz mais sentido para você?")+
     "\n\nDeixe sua opinião nos comentários e participe do debate. Se este tipo de conteúdo interessa a você, inscreva-se no canal para acompanhar os próximos vídeos.";
-  const tags=[...new Set([key,...related,...(topic?clean(topic).split(" ").filter(w=>w.length>3&&!stopWords.has(w)):[]),"debate","reflexão","opinião"].map(v=>v.trim()).filter(Boolean))].slice(0,15);
-  const hashtags=[...new Set([key,...related.slice(0,2),"debate"].map(v=>v.replace(/[^a-z0-9]/gi,"")).filter(Boolean))].slice(0,4).map(v=>"#"+v).join(" ");
+  const tags=[...new Set([key,...related,...(topic?clean(topic).split(" ").filter(w=>w.length>3&&!stopWords.has(w)):[]),...profileThemes,...(niche?[niche]:[]),"debate","opinião"].map(v=>v.trim()).filter(Boolean))].slice(0,20);
+  const hashtags=[...new Set([key,...related.slice(0,2),...profileThemes.slice(0,1),niche].map(v=>v.replace(/[^a-z0-9]/gi,"")).filter(Boolean))].slice(0,5).map(v=>"#"+v).join(" ");
   const addResult=(label,value)=>{
     const section=document.createElement("div"); section.className="seo-result";
     const heading=document.createElement("b"); heading.textContent=label;
@@ -173,7 +217,7 @@ function renderSEO(){
   addResult("Descrição contextualizada",description+"\n\n"+hashtags);
   addResult("Palavras-chave extraídas do roteiro",tags.join(", "));
   const note=document.createElement("p"); note.className="hint";
-  note.textContent="A análise identifica termos e frases presentes no roteiro. Revise os títulos para garantir que representem fielmente o vídeo. As tags são apoio contextual; título, miniatura, retenção e satisfação do público têm maior peso.";
+  note.textContent="A análise combina o roteiro com a identidade editorial salva para este canal. "+(avoid?"Evite enquadramentos ligados a: "+avoid+". ":"")+"Revise os títulos para garantir que representem fielmente o vídeo. As tags são apoio contextual; título, miniatura, retenção e satisfação do público têm maior peso.";
   output.appendChild(note);
 }
 
@@ -198,6 +242,8 @@ async function loadDashboard(){
     $("dashboard").classList.remove("hidden");
     $("connect-button").classList.add("hidden");
     const channel=await api("/api/channel");
+    activeChannelId=channel.id||channel.title||"default";
+    loadEditorialProfile();
     $("channel-title").textContent=channel.title;
     $("channel-description").textContent=channel.description||"";
     $("channel-thumbnail").src=channel.thumbnail||"";
@@ -264,6 +310,7 @@ async function loadDashboard(){
 $("connect-button").addEventListener("click",()=>location.href="/auth/google");
 $("refresh-button").addEventListener("click",loadDashboard);
 $("seo-generate").addEventListener("click",renderSEO);
+$("profile-save").addEventListener("click",saveEditorialProfile);
 $("disconnect-button").addEventListener("click",async()=>{
   await api("/auth/logout",{method:"POST"});
   location.reload();
