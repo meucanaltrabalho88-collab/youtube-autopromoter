@@ -182,16 +182,18 @@ function renderSEO(){
   const isFootball=/futebol|jogador|vesti.rio|resenha|bastidor/.test((niche+" "+profile.themes+" "+script).toLowerCase());
   let titleOptions;
   if(isFootball && /vesti.rio|c.meras desligadas|c.meras est.o desligadas|pegadinha|brincadeira|apelido|supersti..o/.test(lowerScript)){
-    titleOptions=[
-      "No futebol, a resenha também acontece longe das câmeras",
-      "Tem jogador que não dispensa uma brincadeira nem antes do jogo",
-      "O que acontece no vestiário antes de a bola rolar?"
-    ];
+    const hasPranks=/pegadinha|brincadeira|apelido/.test(lowerScript);
+    const hasSuperstition=/supersti..o|ritual|rotina/.test(lowerScript);
+    titleOptions=[];
+    if(hasPranks) titleOptions.push("Apelidos e pegadinhas: a resenha que rola entre os jogadores");
+    if(hasSuperstition) titleOptions.push("Tem jogador que não abre mão das próprias manias nem antes do jogo");
+    titleOptions.push("O que os jogadores aprontam no vestiário antes de uma partida?");
+    titleOptions.push("Entre brincadeiras e superstições, também é assim que se vive o futebol");
   } else if(isFootball) {
     titleOptions=[
-      "O que aconteceu nessa história de futebol?",
-      "A resenha por trás de "+titleTopic,
-      "Essa história dos bastidores do futebol merece ser contada"
+      "O detalhe dessa história de futebol que chama atenção",
+      "O que aconteceu nos bastidores dessa história?",
+      "Uma resenha de futebol que vale a conversa"
     ];
   } else {
     titleOptions=[
@@ -215,7 +217,7 @@ function renderSEO(){
     "\n\nE você, o que acha? Deixe sua opinião nos comentários e participe da conversa. "+
     "Inscreva-se no canal para acompanhar as próximas resenhas e histórias.";
   const tags=[...new Set([key,...related,...(topic?clean(topic).split(" ").filter(w=>w.length>3&&!stopWords.has(w)):[]),...profileThemes,...(niche?[niche]:[]),"debate","opinião"].map(v=>v.trim()).filter(Boolean))].slice(0,20);
-  const hashtags=[...new Set([key,...related.slice(0,2),...profileThemes.slice(0,1),niche].map(v=>v.replace(/[^a-z0-9]/gi,"")).filter(Boolean))].slice(0,5).map(v=>"#"+v).join(" ");
+  const hashtags=[...new Set([key,...related.slice(0,2),...profileThemes.slice(0,1),niche].map(v=>clean(v).replace(/\s+/g,"")).filter(v=>v.length>=3))].slice(0,5).map(v=>"#"+v).join(" ");
   const addResult=(label,value)=>{
     const section=document.createElement("div"); section.className="seo-result";
     const heading=document.createElement("b"); heading.textContent=label;
