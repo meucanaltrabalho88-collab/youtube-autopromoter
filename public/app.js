@@ -159,7 +159,7 @@ function renderSEO(){
     return;
   }
 
-  const stopWords=new Set(("a o as os um uma uns umas de da do das dos em no na nos nas por para com sem sob sobre entre e ou mas que se sua seu suas seus isso isto esse essa este esta ao aos à às como mais menos muito muita muitos muitas já também não sim ser estar ter foi são era eram será vai vão pode podem deve devem porque quando onde qual quais quem todo toda todos todas cada outro outra outros outras mesmo mesma mesmos mesmas pelo pela pelos pelas até após antes durante então assim apenas ainda aqui ali ele ela eles elas nós vocês eu me meu minha meus minhas você voces canal vídeo vídeos conteúdo conteúdos tema assunto debate reflexão opinião análise acontece ambiente concentracao escrita roteiro narração".split(/\s+/));
+  const stopWords=new Set("a o as os um uma uns umas de da do das dos em no na nos nas por para com sem sob sobre entre e ou mas que se sua seu suas seus isso isto esse essa este esta ao aos à às como mais menos muito muita muitos muitas já também não sim ser estar ter foi são era eram será vai vão pode podem deve devem porque quando onde qual quais quem todo toda todos todas cada outro outra outros outras mesmo mesma mesmos mesmas pelo pela pelos pelas até após antes durante então assim apenas ainda aqui ali ele ela eles elas nós vocês eu me meu minha meus minhas você voces canal vídeo vídeos conteúdo conteúdos tema assunto debate reflexão opinião análise acontece ambiente concentracao escrita roteiro narração".split(/\s+/));
 
   const clean=s=>s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9\s]/g," ").replace(/\s+/g," ").trim();
   const words=clean(script).split(" ").filter(w=>w.length>3&&!stopWords.has(w));
