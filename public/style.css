@@ -31,3 +31,14 @@ button{font:inherit;cursor:pointer;border:0;border-radius:12px;padding:13px 18px
 .idea-item b{display:block;font-size:15px;line-height:1.45;overflow-wrap:anywhere}
 .idea-item p{color:var(--muted);font-size:12px;line-height:1.6;margin:8px 0 12px}
 .idea-copy{padding:9px 13px;font-size:12px}
+
+.seo-form{display:grid;gap:8px;margin-top:18px;max-width:620px}
+.seo-form label{font-size:13px;font-weight:700;margin-top:7px}
+.seo-form input{width:100%;padding:13px 14px;border-radius:10px;border:1px solid var(--line);background:#222;color:var(--text);font:inherit}
+.seo-form input:focus{outline:2px solid var(--red);outline-offset:1px}
+.seo-form button{justify-self:start;margin-top:8px}
+.seo-results{display:grid;gap:12px;margin-top:18px}
+.seo-result{padding:15px;background:#222;border:1px solid var(--line);border-radius:12px}
+.seo-result b{display:block;font-size:14px;margin-bottom:8px}
+.seo-copy-text{white-space:pre-wrap;overflow-wrap:anywhere;color:#ddd;font-size:13px;line-height:1.65;margin:0 0 12px}
+.seo-result button{font-size:12px;padding:9px 13px}
