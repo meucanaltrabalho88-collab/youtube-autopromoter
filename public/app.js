@@ -1,3 +1,73 @@
+
+function renderDiagnosis(rows, totals, videos){
+  const container = $("diagnosis-content");
+  if (!container) return;
+  container.replaceChildren();
+  const addInsight = (type, title, description) => {
+    const item = document.createElement("article");
+    item.className = "diagnosis-item " + type;
+    const heading = document.createElement("b");
+    heading.textContent = title;
+    const body = document.createElement("p");
+    body.textContent = description;
+    item.append(heading, body);
+    container.appendChild(item);
+  };
+
+  if (!rows.length || !totals.views) {
+    addInsight("neutral", "Ainda faltam dados para um diagnóstico", "Publique conteúdo e aguarde o processamento do YouTube Analytics. Depois, atualize o painel para receber recomendações baseadas no desempenho.");
+    return;
+  }
+
+  const firstHalf = rows.slice(0, 14);
+  const secondHalf = rows.slice(14);
+  const sumViews = part => part.reduce((sum, row) => sum + Number(row[1] || 0), 0);
+  const firstViews = sumViews(firstHalf);
+  const secondViews = sumViews(secondHalf);
+  if (firstHalf.length >= 7 && secondHalf.length >= 7) {
+    if (firstViews > 0) {
+      const change = ((secondViews - firstViews) / firstViews) * 100;
+      if (change >= 10) {
+        addInsight("positive", "As visualizações estão em alta", "A segunda metade do período teve " + Math.round(change) + "% mais visualizações que a primeira. Identifique os temas e formatos publicados nesse intervalo e teste novas abordagens semelhantes.");
+      } else if (change <= -10) {
+        addInsight("attention", "As visualizações perderam ritmo", "A segunda metade do período teve " + Math.abs(Math.round(change)) + "% menos visualizações. Revise os temas, títulos e miniaturas recentes e compare o resultado no YouTube Studio.");
+      } else {
+        addInsight("neutral", "Visualizações relativamente estáveis", "A diferença entre as duas metades do período ficou em " + Math.round(change) + "%. Experimente novos ângulos para os temas que já demonstraram interesse do público.");
+      }
+    } else if (secondViews > 0) {
+      addInsight("positive", "O canal começou a registrar visualizações", "A primeira metade não teve visualizações registradas e a segunda teve " + number(secondViews) + ". Acompanhe os próximos períodos para confirmar se esse avanço se mantém.");
+    }
+  } else {
+    addInsight("neutral", "Histórico ainda curto", "Há poucos dias com dados suficientes para comparar tendências. Continue publicando e volte a analisar quando houver uma série mais completa.");
+  }
+
+  const avgSeconds = rows.reduce((sum,row)=>sum + Number(row[1]||0)*Number(row[3]||0),0) / Math.max(1,totals.views);
+  const avgText = Math.floor(avgSeconds/60) + ":" + String(Math.floor(avgSeconds%60)).padStart(2,"0");
+  if (avgSeconds > 0) {
+    addInsight("neutral", "Tempo médio assistido: " + avgText, "Use esse valor como referência geral do período. Compare-o com a duração de cada vídeo no YouTube Studio para avaliar se a abertura entrega rapidamente o que o título e a miniatura prometem.");
+  }
+
+  const conversion = totals.views ? (totals.subs / totals.views) * 1000 : 0;
+  if (totals.views >= 100) {
+    addInsight(conversion >= 3 ? "positive" : "attention", "Conversão aproximada em inscritos: " + conversion.toFixed(1).replace(".", ",") + " por mil visualizações", conversion >= 3
+      ? "O canal está convertendo parte dos espectadores em inscritos. Mantenha chamadas para inscrição naturais e ligadas ao valor entregue pelo conteúdo."
+      : "Há espaço para transformar mais espectadores em inscritos. Explique com clareza o que a pessoa encontrará no canal e convide-a a acompanhar os próximos debates.");
+  }
+
+  if (videos.length) {
+    const totalVideoHours = videos.reduce((sum,video)=>sum+Number(video.watchHours||0),0);
+    const leading = videos[0];
+    const share = totalVideoHours ? (Number(leading.watchHours||0)/totalVideoHours)*100 : 0;
+    if (share >= 35) {
+      addInsight("positive", "Um vídeo se destaca no tempo assistido", "“" + leading.title + "” representa aproximadamente " + Math.round(share) + "% do tempo assistido somado dos vídeos exibidos no ranking. Considere criar um novo conteúdo que aprofunde o assunto, sem repetir o mesmo vídeo.");
+    } else {
+      addInsight("neutral", "O desempenho está distribuído entre vários vídeos", "Nenhum vídeo concentra sozinho grande parte do tempo assistido no ranking. Compare os temas dos primeiros colocados e procure padrões que possam orientar os próximos conteúdos.");
+    }
+  }
+
+  addInsight("neutral", "Próxima verificação importante", "CTR de impressões e retenção detalhada não estão disponíveis nesta análise automática. Consulte essas métricas no YouTube Studio antes de decidir trocar miniaturas ou editar a estrutura dos vídeos.");
+}
+
 const $ = id => document.getElementById(id);
 const number = value => new Intl.NumberFormat("pt-BR").format(Number(value || 0));
 function message(text=""){ $("message").textContent=text; }
@@ -77,6 +147,7 @@ async function loadDashboard(){
         list.appendChild(card);
       });
     }
+    renderDiagnosis(analytics.rows || [], totals, videoReport.videos || []);
     message("");
   }catch(error){message(error.message);}
 }
