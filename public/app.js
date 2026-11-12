@@ -46,7 +46,7 @@ function renderVideoIdeas(videos){
   note.textContent="Estas são sugestões automáticas de pauta, não previsões de desempenho. Valide o interesse do público nos comentários e no YouTube Studio antes de produzir.";
   container.appendChild(note);
 }
-\n
+
 function renderDiagnosis(rows, totals, videos){
   const container = $("diagnosis-content");
   if (!container) return;
