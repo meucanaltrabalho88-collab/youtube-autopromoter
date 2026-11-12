@@ -75,13 +75,16 @@
 
       <section class="panel seo-panel">
         <div class="panel-heading"><div><p class="eyebrow">OTIMIZAÇÃO DE CONTEÚDO</p><h2>SEO Inteligente</h2></div><span class="muted">Títulos, descrição e palavras-chave</span></div>
-        <p class="hint">Informe o tema do próximo vídeo e a palavra-chave principal. O AutoPromoter vai montar um rascunho para você revisar e copiar.</p>
+        <p class="hint">Cole o roteiro para identificar os argumentos, perguntas e termos mais relevantes. O gerador usará o conteúdo real do vídeo para montar os rascunhos.</p>
         <div class="seo-form">
-          <label for="seo-topic">Assunto do vídeo</label>
+          <label for="seo-topic">Assunto ou título provisório do vídeo (opcional)</label>
           <input id="seo-topic" type="text" maxlength="180" placeholder="Ex.: A meritocracia realmente existe?">
           <label for="seo-keyword">Palavra-chave principal (opcional)</label>
           <input id="seo-keyword" type="text" maxlength="80" placeholder="Ex.: meritocracia">
-          <button class="primary" id="seo-generate" type="button">Gerar sugestões de SEO</button>
+          <label for="seo-script">Roteiro completo do vídeo</label>
+          <textarea id="seo-script" rows="9" maxlength="30000" placeholder="Cole aqui a narração completa do vídeo..."></textarea>
+          <p class="hint">Mínimo de 250 caracteres. Quanto mais completo o roteiro, melhor será a identificação dos temas e argumentos.</p>
+          <button class="primary" id="seo-generate" type="button">Analisar roteiro e gerar SEO</button>
         </div>
         <div id="seo-results" class="seo-results" aria-live="polite"><p class="muted">As sugestões aparecerão aqui.</p></div>
       </section>
