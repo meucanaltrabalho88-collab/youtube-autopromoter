@@ -177,32 +177,42 @@ function renderSEO(){
   const profileThemes=(profile.themes||"").split(",").map(v=>v.trim()).filter(Boolean);
   const avoid=(profile.avoid||"").trim();
   const related=ranked.filter(w=>clean(w)!==clean(key)).slice(0,8);
-  const titleTopic=topic||key;
-  const titleOptions=[
-    titleTopic+"? A história por trás do assunto",
-    "O que pouca gente sabe sobre "+(titleTopic||key),
-    (key||titleTopic)+": uma resenha com histórias e detalhes que merecem atenção"
-  ];
-  if(niche.toLowerCase().includes("futebol") || profileThemes.some(t=>/jogador|bastidor|resenha|futebol|hist.ria engra/i.test(t))){
-    titleOptions[0]=(topic||key)+"? A história que está por trás dessa resenha";
-    titleOptions[1]="O bastidor e os detalhes que pouca gente conhece sobre "+(topic||key);
-    titleOptions[2]="A resenha é boa, mas essa história é melhor: "+(topic||key);
+  const titleTopic=(topic||key).replace(/[?!.]+$/g,"").trim();
+  const lowerScript=script.toLowerCase();
+  const isFootball=/futebol|jogador|vesti.rio|resenha|bastidor/.test((niche+" "+profile.themes+" "+script).toLowerCase());
+  let titleOptions;
+  if(isFootball && /vesti.rio|c.meras desligadas|c.meras est.o desligadas|pegadinha|brincadeira|apelido|supersti..o/.test(lowerScript)){
+    titleOptions=[
+      "O que rola nos bastidores do futebol quando ninguém está vendo?",
+      "As brincadeiras e pegadinhas que fazem parte da vida dos jogadores",
+      "No vestiário, nem tudo é concentração: também tem muita resenha"
+    ];
+  } else if(isFootball) {
+    titleOptions=[
+      "A resenha por trás de "+titleTopic,
+      "O que os jogadores têm a dizer sobre "+titleTopic,
+      titleTopic+": histórias e bastidores do futebol"
+    ];
+  } else {
+    titleOptions=[
+      "O que está por trás de "+titleTopic+"?",
+      "O que pouca gente percebe sobre "+titleTopic,
+      titleTopic+": o que vale a pena entender"
+    ];
   }
-  if(questionSentences.length){
+  if(questionSentences.length && questionSentences[0].length<=78){
     const q=questionSentences[0].replace(/[“”"]/g,"").trim();
-    titleOptions[0]=q.length<=78?q:titleOptions[0];
+    if(!titleOptions.some(t=>clean(t)===clean(q))) titleOptions[0]=q;
   }
-  const intro=firstSentences.join(" ");
-  const summary=sentences.length>3?sentences.slice(3,6).join(" "):"Neste vídeo, examinamos diferentes pontos de vista, os argumentos apresentados e as consequências desse tema.";
-  const description=(niche?"Conteúdo do canal sobre "+niche+". ":"")+
-    (style?"Em uma linguagem "+style+", ":"")+
-    (audience?"Pensado para "+audience+". ":"")+
-    (topic?"Neste vídeo, o tema central é "+topic+". ":"")+
-    (intro?intro+" ":"")+
-    (summary?summary+" ":"")+
-    "\n\nA proposta é olhar para o assunto com senso crítico, considerar os diferentes lados e separar opiniões de argumentos. "+
-    (questionSentences.length?"Uma das perguntas que orientam a discussão é: "+questionSentences[0]:"Qual argumento faz mais sentido para você?")+
-    "\n\nDeixe sua opinião nos comentários e participe do debate. Se este tipo de conteúdo interessa a você, inscreva-se no canal para acompanhar os próximos vídeos.";
+  titleOptions=[...new Set(titleOptions)].slice(0,3);
+  while(titleOptions.length<3) titleOptions.push("Uma conversa sobre "+titleTopic);
+  const body=sentences.slice(0,6).join(" ");
+  const description=(niche?"Aqui no canal, a gente fala sobre "+niche.toLowerCase()+". ":"")+
+    (style?"Tudo com um jeito "+style.toLowerCase()+". ":"")+
+    (topic?"Neste vídeo, o papo é sobre "+topic+". ":"")+
+    (body?body+" ":"")+
+    "\\n\\nE você, o que acha? Deixe sua opinião nos comentários e participe da conversa. "+
+    "Inscreva-se no canal para acompanhar as próximas resenhas e histórias.";
   const tags=[...new Set([key,...related,...(topic?clean(topic).split(" ").filter(w=>w.length>3&&!stopWords.has(w)):[]),...profileThemes,...(niche?[niche]:[]),"debate","opinião"].map(v=>v.trim()).filter(Boolean))].slice(0,20);
   const hashtags=[...new Set([key,...related.slice(0,2),...profileThemes.slice(0,1),niche].map(v=>v.replace(/[^a-z0-9]/gi,"")).filter(Boolean))].slice(0,5).map(v=>"#"+v).join(" ");
   const addResult=(label,value)=>{
