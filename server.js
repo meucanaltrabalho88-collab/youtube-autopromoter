@@ -160,10 +160,22 @@ app.get("/api/analytics", async (req, res) => {
       dimensions: "day",
       sort: "day"
     });
+    const annualStart = new Date(end);
+    annualStart.setDate(annualStart.getDate() - 364);
+    const annualResponse = await analytics.reports.query({
+      ids: "channel==MINE",
+      startDate: fmt(annualStart),
+      endDate: fmt(end),
+      metrics: "estimatedMinutesWatched"
+    });
+    const annualMinutes = Number(annualResponse.data.rows?.[0]?.[0] || 0);
     res.json({
       startDate: fmt(start),
       endDate: fmt(end),
-      rows: response.data.rows || []
+      rows: response.data.rows || [],
+      annualStartDate: fmt(annualStart),
+      annualEndDate: fmt(end),
+      watchHours365: Math.round(annualMinutes / 60)
     });
   } catch (error) {
     res.status(500).json({ error: "Não foi possível carregar as métricas do YouTube Analytics." });
