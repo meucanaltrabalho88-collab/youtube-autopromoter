@@ -1,4 +1,52 @@
 
+function renderVideoIdeas(videos){
+  const container = $("video-ideas");
+  if (!container) return;
+  container.replaceChildren();
+  if (!videos.length) {
+    const empty = document.createElement("p");
+    empty.className = "muted";
+    empty.textContent = "Quando houver vídeos com desempenho no período, o painel sugerirá novos ângulos de conteúdo.";
+    container.appendChild(empty);
+    return;
+  }
+  const ideas = [
+    {tag:"Aprofundamento",make:title=>"O que ainda precisamos entender sobre: " + title,why:"Aprofunde o assunto que já demonstrou capacidade de gerar tempo de exibição."},
+    {tag:"Debate",make:title=>"O outro lado da história: " + title,why:"Apresente argumentos diferentes e convide a audiência a participar com respeito."},
+    {tag:"Continuação",make:title=>"As perguntas que ficaram depois de: " + title,why:"Transforme dúvidas e comentários do público em uma continuação útil."}
+  ];
+  videos.slice(0,3).forEach((video,index)=>{
+    const idea=ideas[index];
+    const card=document.createElement("article");
+    card.className="idea-item";
+    const tag=document.createElement("span");
+    tag.className="idea-tag";
+    tag.textContent=idea.tag+" · Inspirado em: "+video.title;
+    const heading=document.createElement("b");
+    heading.textContent=idea.make(video.title);
+    const detail=document.createElement("p");
+    detail.textContent=idea.why+" Referência: este vídeo está entre os que mais geraram tempo de exibição nos últimos 28 dias.";
+    const copy=document.createElement("button");
+    copy.className="secondary idea-copy";
+    copy.type="button";
+    copy.textContent="Copiar ideia";
+    copy.addEventListener("click",async()=>{
+      try{
+        await navigator.clipboard.writeText(idea.make(video.title));
+        copy.textContent="Copiado!";
+      }catch(e){
+        copy.textContent="Selecione e copie o título";
+      }
+    });
+    card.append(tag,heading,detail,copy);
+    container.appendChild(card);
+  });
+  const note=document.createElement("p");
+  note.className="hint";
+  note.textContent="Estas são sugestões automáticas de pauta, não previsões de desempenho. Valide o interesse do público nos comentários e no YouTube Studio antes de produzir.";
+  container.appendChild(note);
+}
+\n
 function renderDiagnosis(rows, totals, videos){
   const container = $("diagnosis-content");
   if (!container) return;
@@ -147,7 +195,7 @@ async function loadDashboard(){
         list.appendChild(card);
       });
     }
-    renderDiagnosis(analytics.rows || [], totals, videoReport.videos || []);
+    renderDiagnosis(analytics.rows || [], totals, videoReport.videos || []);\n    renderVideoIdeas(videoReport.videos || []);
     message("");
   }catch(error){message(error.message);}
 }
