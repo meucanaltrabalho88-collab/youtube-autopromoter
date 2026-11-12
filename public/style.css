@@ -24,3 +24,10 @@ button{font:inherit;cursor:pointer;border:0;border-radius:12px;padding:13px 18px
 .diagnosis-item.positive{border-left-color:#36b879}
 .diagnosis-item.attention{border-left-color:#e6a23c}
 .diagnosis-item.neutral{border-left-color:#777}
+
+.ideas-list{display:grid;gap:12px;margin-top:18px}
+.idea-item{padding:16px;background:#222;border:1px solid var(--line);border-radius:12px}
+.idea-tag{display:block;color:#ff858c;font-size:11px;line-height:1.5;margin-bottom:8px;overflow-wrap:anywhere}
+.idea-item b{display:block;font-size:15px;line-height:1.45;overflow-wrap:anywhere}
+.idea-item p{color:var(--muted);font-size:12px;line-height:1.6;margin:8px 0 12px}
+.idea-copy{padding:9px 13px;font-size:12px}
