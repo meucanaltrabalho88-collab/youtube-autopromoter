@@ -109,7 +109,15 @@ app.get("/api/channel", async (req, res) => {
       videos: channel.statistics.videoCount
     });
   } catch (error) {
-    res.status(500).json({ error: "Falha ao consultar o canal. Verifique as APIs e permissões do Google." });
+    // Registra somente os detalhes do erro da API; nunca registra tokens ou credenciais.
+    console.error("[YouTube Data API] Falha ao consultar canal:", {
+      status: error.response?.status || error.status || null,
+      code: error.code || null,
+      message: error.message || "Erro sem mensagem",
+      errors: error.response?.data?.error?.errors || error.errors || null,
+      reason: error.response?.data?.error?.status || null
+    });
+    res.status(500).json({ error: "Falha ao consultar o canal. Verifique os logs do serviço no Render para identificar o motivo." });
   }
 });
 
