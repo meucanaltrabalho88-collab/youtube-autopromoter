@@ -47,6 +47,36 @@ async function loadDashboard(){
     updateGoal("early-hours",watchHours,3000,"horas");
     updateGoal("ads-subs",subscribers,1000,"inscritos");
     updateGoal("ads-hours",watchHours,4000,"horas");
+    const videoReport=await api("/api/top-videos");
+    $("videos-period").textContent=videoReport.startDate+" a "+videoReport.endDate;
+    const list=$("top-videos");
+    list.replaceChildren();
+    if(!videoReport.videos.length){
+      const empty=document.createElement("p");
+      empty.className="muted";
+      empty.textContent="Ainda não há dados suficientes de desempenho para os vídeos neste período.";
+      list.appendChild(empty);
+    } else {
+      videoReport.videos.forEach((video,index)=>{
+        const card=document.createElement("article");
+        card.className="video-item";
+        const img=document.createElement("img");
+        img.src=video.thumbnail;
+        img.alt="";
+        const content=document.createElement("div");
+        content.className="video-content";
+        const title=document.createElement("b");
+        title.textContent=(index+1)+". "+video.title;
+        const stats=document.createElement("p");
+        stats.className="muted";
+        const avg=Math.floor(video.averageViewDuration||0);
+        const avgText=Math.floor(avg/60)+":"+String(avg%60).padStart(2,"0");
+        stats.textContent=number(video.views)+" visualizações  •  "+number(video.watchHours)+" horas assistidas  •  média "+avgText+"  •  CTR "+(Number(video.clickThroughRate||0)*100).toFixed(1).replace(".",",")+"%";
+        content.append(title,stats);
+        card.append(img,content);
+        list.appendChild(card);
+      });
+    }
     message("");
   }catch(error){message(error.message);}
 }
