@@ -241,13 +241,16 @@ const $ = id => document.getElementById(id);
 const number = value => new Intl.NumberFormat("pt-BR").format(Number(value || 0));
 function message(text=""){ $("message").textContent=text; }
 async function api(url, options={}) {
-  const response=await fetch(url,{credentials:"same-origin",...options});
+  const response=await fetch(url,{credentials:"same-origin",...options,signal:options.signal||AbortSignal.timeout(15000)});
   const data=await response.json().catch(()=>({}));
   if(!response.ok) throw new Error(data.error || "Ocorreu um erro.");
   return data;
 }
 async function loadDashboard(){
   try{
+    $("connection-status").textContent="Verificando servidor…";
+    await api("/healthz");
+    $("connection-status").textContent="Servidor online · verificando canal…";
     const status=await api("/api/status");
     $("connection-status").textContent=status.connected?"Canal conectado":"Não conectado";
     if(!status.configured){
@@ -321,7 +324,13 @@ async function loadDashboard(){
     renderDiagnosis(analytics.rows || [], totals, videoReport.videos || []);
     renderVideoIdeas(videoReport.videos || []);
     message("");
-  }catch(error){message(error.message);}
+  }catch(error){
+    const timedOut=error.name==="TimeoutError"||error.name==="AbortError";
+    $("connection-status").textContent="Falha ao verificar conexão";
+    message(timedOut
+      ?"O servidor demorou para responder. Aguarde alguns segundos e clique em Atualizar."
+      :"Não foi possível alcançar o servidor ou consultar a sessão. Confira o status do serviço no Render e tente novamente.");
+  }
 }
 $("connect-button").addEventListener("click",()=>location.href="/auth/google");
 $("refresh-button").addEventListener("click",loadDashboard);
