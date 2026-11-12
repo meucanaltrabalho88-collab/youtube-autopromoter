@@ -195,7 +195,8 @@ async function loadDashboard(){
         list.appendChild(card);
       });
     }
-    renderDiagnosis(analytics.rows || [], totals, videoReport.videos || []);\n    renderVideoIdeas(videoReport.videos || []);
+    renderDiagnosis(analytics.rows || [], totals, videoReport.videos || []);
+    renderVideoIdeas(videoReport.videos || []);
     message("");
   }catch(error){message(error.message);}
 }
