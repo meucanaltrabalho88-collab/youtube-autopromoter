@@ -211,7 +211,7 @@ function renderSEO(){
     (style?"Tudo com um jeito "+style.toLowerCase()+". ":"")+
     (topic?"Neste vídeo, o papo é sobre "+topic+". ":"")+
     (body?body+" ":"")+
-    "\\n\\nE você, o que acha? Deixe sua opinião nos comentários e participe da conversa. "+
+    "\n\nE você, o que acha? Deixe sua opinião nos comentários e participe da conversa. "+
     "Inscreva-se no canal para acompanhar as próximas resenhas e histórias.";
   const tags=[...new Set([key,...related,...(topic?clean(topic).split(" ").filter(w=>w.length>3&&!stopWords.has(w)):[]),...profileThemes,...(niche?[niche]:[]),"debate","opinião"].map(v=>v.trim()).filter(Boolean))].slice(0,20);
   const hashtags=[...new Set([key,...related.slice(0,2),...profileThemes.slice(0,1),niche].map(v=>v.replace(/[^a-z0-9]/gi,"")).filter(Boolean))].slice(0,5).map(v=>"#"+v).join(" ");
