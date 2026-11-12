@@ -182,6 +182,55 @@ app.get("/api/analytics", async (req, res) => {
   }
 });
 
+
+app.get("/api/top-videos", async (req, res) => {
+  try {
+    const auth = googleAuth(req);
+    if (!auth) return res.status(401).json({ error: "Conecte seu canal primeiro." });
+    const analytics = google.youtubeAnalytics({ version: "v2", auth });
+    const end = new Date();
+    end.setDate(end.getDate() - 2);
+    const start = new Date(end);
+    start.setDate(start.getDate() - 27);
+    const fmt = d => d.toISOString().slice(0, 10);
+    const report = await analytics.reports.query({
+      ids: "channel==MINE",
+      startDate: fmt(start),
+      endDate: fmt(end),
+      dimensions: "video",
+      metrics: "views,estimatedMinutesWatched,averageViewDuration,impressions,impressionsClickThroughRate",
+      sort: "-estimatedMinutesWatched",
+      maxResults: 10
+    });
+    const rows = report.data.rows || [];
+    if (!rows.length) return res.json({ startDate: fmt(start), endDate: fmt(end), videos: [] });
+    const ids = rows.map(row => row[0]).filter(Boolean);
+    const yt = google.youtube({ version: "v3", auth });
+    const details = await yt.videos.list({ part: ["snippet", "contentDetails"], id: ids });
+    const byId = new Map((details.data.items || []).map(video => [video.id, video]));
+    const videos = rows.map(row => {
+      const video = byId.get(row[0]);
+      if (!video) return null;
+      return {
+        id: video.id,
+        title: video.snippet.title,
+        thumbnail: video.snippet.thumbnails?.medium?.url || video.snippet.thumbnails?.default?.url || "",
+        publishedAt: video.snippet.publishedAt,
+        duration: video.contentDetails.duration,
+        views: Number(row[1] || 0),
+        watchHours: Math.round(Number(row[2] || 0) / 60),
+        averageViewDuration: Number(row[3] || 0),
+        impressions: Number(row[4] || 0),
+        clickThroughRate: Number(row[5] || 0)
+      };
+    }).filter(Boolean);
+    res.json({ startDate: fmt(start), endDate: fmt(end), videos });
+  } catch (error) {
+    console.error("[YouTube Analytics] Falha ao consultar vídeos:", error.message);
+    res.status(500).json({ error: "Não foi possível analisar os vídeos. Confira se o canal possui dados no período." });
+  }
+});
+
 app.get("*", (req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
 
 app.listen(PORT, () => console.log(`YouTube AutoPromoter disponível na porta ${PORT}`));
