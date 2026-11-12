@@ -35,6 +35,18 @@ async function loadDashboard(){
     $("period-views").textContent=number(totals.views);
     $("watch-time").textContent=number(Math.round(totals.minutes));
     $("gained-subs").textContent=number(totals.subs);
+    const subscribers=Number(channel.subscribers||0);
+    const watchHours=Number(analytics.watchHours365||0);
+    const percent=(value,target)=>Math.min(100,Math.max(0,(value/target)*100));
+    const updateGoal=(prefix,value,target,suffix)=>{
+      $(prefix+"-label").textContent=number(Math.floor(value))+" / "+number(target)+" "+suffix;
+      $(prefix+"-progress").style.width=percent(value,target)+"%";
+      $(prefix+"-detail").textContent=value>=target?"Meta numérica alcançada. Confira os demais requisitos no YouTube Studio.":"Faltam aproximadamente "+number(Math.max(0,Math.ceil(target-value)))+" "+suffix+".";
+    };
+    updateGoal("early-subs",subscribers,500,"inscritos");
+    updateGoal("early-hours",watchHours,3000,"horas");
+    updateGoal("ads-subs",subscribers,1000,"inscritos");
+    updateGoal("ads-hours",watchHours,4000,"horas");
     message("");
   }catch(error){message(error.message);}
 }
