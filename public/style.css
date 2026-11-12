@@ -44,3 +44,6 @@ button{font:inherit;cursor:pointer;border:0;border-radius:12px;padding:13px 18px
 .seo-result button{font-size:12px;padding:9px 13px}
 
 .seo-form textarea{width:100%;min-height:180px;padding:13px 14px;border-radius:10px;border:1px solid var(--line);background:#222;color:var(--text);font:inherit;line-height:1.6;resize:vertical}.seo-form textarea:focus{outline:2px solid var(--red);outline-offset:1px}
+
+.profile-panel .seo-form{max-width:680px}
+#profile-status{min-height:18px}
